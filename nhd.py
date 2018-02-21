@@ -22,6 +22,10 @@ from time import sleep
 import RPi.GPIO as GPIO
 
 class NhdLcd:
+    """This is the class responsible for interacting with the US2066 OLED controller
+    provided by New Haven Display. It provides function level abstraction for 
+    displaying content to the OLED screen
+    """
     __delay=500
     __reset=0
     __dc=0
@@ -148,15 +152,20 @@ class NhdLcd:
         GPIO.output(self.__clk, GPIO.LOW)
         GPIO.output(self.__cs, GPIO.HIGH)
     def begin(self):
+        """Sends a sequence of initialization messages to the US2066 controller and prepares
+        the OLED for displaying messages.
+        """
         self.__begin()
 
     def set_cursor(self, row, col):
+        """Sets the cursor position to row, column"""
         self.__set_cursor(row, col)
 
     def __set_cursor(self, row, col):
         self.__command(0x80+(row*0x20)+col)
 
     def display_text(self, text):
+        """Takes a string and will print at the current cursor positiong (DRAM address)."""
         self.__display_text(text)
         
     def __display_text(self, text):

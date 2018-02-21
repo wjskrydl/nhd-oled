@@ -23,27 +23,18 @@ import signal
 from nhd import NhdLcd
 from time import sleep
 from threading import Lock
-def signal_handler(signal, frame):
-    kill_flag(True) 
-master_kill=False   
-mutex=Lock()
-def kill_flag(kill=False):
-    global master_kill
-    global mutex
-    mutex.acquire()
-    try:
-        if kill==True:
-            master_kill=True
-        ret = master_kill
-    finally:
-        mutex.release()
-    return ret
 
 def main():
+    # sets up the signal handler for SIGINT
     signal.signal(signal.SIGINT,signal_handler)
+    
+    # creates NhdLcd object with the respective pins
     lcd=NhdLcd(2,3,18,26,19,13,6,4,17,27,22,10)
-    print("Display setup")
+    
+    # sets up the display
     lcd.begin()
+    
+    # everything after this is is just fancy printing
     upOne=True
     one=0
     upTwo=True
@@ -52,7 +43,6 @@ def main():
     three=0
     upFour=True
     four=0
-    print("Display Initialized")
     while kill_flag()==False:
         lcd.set_cursor(0,one)
         if upOne==True:
@@ -106,13 +96,28 @@ def main():
                 upFour=True
             else:
                 four-=1
-        #lcd.set_cursor(1,0)
-        #lcd.display_text('are')
-        #lcd.set_cursor(2,0)
-        #lcd.display_text('belong')
-        #lcd.set_cursor(3,0)
-        #lcd.display_text('to us')
         sleep(.15)
 
 if __name__ == '__main__':
     main()
+
+def signal_handler(signal, frame):
+    """Handles interrupts"""
+    kill_flag(True) 
+master_kill=False   
+mutex=Lock()
+
+def kill_flag(kill=False):
+    """Locking kill flag for the SIGINT to gracefully
+    kill the main thread.
+    """
+    global master_kill
+    global mutex
+    mutex.acquire()
+    try:
+        if kill==True:
+            master_kill=True
+        ret = master_kill
+    finally:
+        mutex.release()
+    return ret
