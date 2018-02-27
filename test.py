@@ -24,6 +24,28 @@ from nhd import NhdLcd
 from time import sleep
 from threading import Lock
 
+master_kill=False   
+mutex=Lock()
+
+def kill_flag(kill=False):
+    """Locking kill flag for the SIGINT to gracefully
+    kill the main thread.
+    """
+    global master_kill
+    global mutex
+    mutex.acquire()
+    try:
+        if kill==True:
+            master_kill=True
+        ret = master_kill
+    finally:
+        mutex.release()
+    return ret
+
+def signal_handler(signal, frame):
+    """Handles interrupts"""
+    kill_flag(True) 
+
 def main():
     # sets up the signal handler for SIGINT
     signal.signal(signal.SIGINT,signal_handler)
@@ -101,23 +123,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-def signal_handler(signal, frame):
-    """Handles interrupts"""
-    kill_flag(True) 
-master_kill=False   
-mutex=Lock()
-
-def kill_flag(kill=False):
-    """Locking kill flag for the SIGINT to gracefully
-    kill the main thread.
-    """
-    global master_kill
-    global mutex
-    mutex.acquire()
-    try:
-        if kill==True:
-            master_kill=True
-        ret = master_kill
-    finally:
-        mutex.release()
-    return ret
